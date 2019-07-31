@@ -55,9 +55,14 @@ export function bind<T, R, E>(fn: (x: T) => Result<R, E>) {
     };
 }
 
-export function match<A, B, C, E>(fn: (x: A) => B, errFn: (x: E) => C) {
-    return (x: Result<A, E>): B | C => {
+export function match<A, B>(fn: (x: A) => B): <E>(x: Result<A, E>) => B | E;
+export function match<A, B, C, E>(fn: (x: A) => B, errFn: (x: E) => C): (x: Result<A, E>) => B | C;
+export function match<A, B, C, E>(fn: (x: A) => B, errFn?: (x: E) => C) {
+    return (x: Result<A, E>): B | C | E => {
         if (x.success === false) {
+            if (!errFn) {
+                return x.err;
+            }
             return errFn(x.err);
         }
         return fn(x.value);
