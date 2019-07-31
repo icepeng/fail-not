@@ -3,14 +3,14 @@ import { pipe } from '../../fp/pipe';
 import { failure, success } from '../../fp/result';
 import { notFound } from '../../response/not-found';
 import { ProductRepository } from './product.repository';
+import { CreateProductDto } from './dtos/create-product.dto';
+import { badRequest } from '../../response/bad-request';
 
 function ProductServiceFactory([productRepository]: [ProductRepository]) {
-    function getAll() {
-        return productRepository.getAll();
-    }
+    const getAll = () => productRepository.getAll();
 
     const getOne = pipe(
-        (id: number) => productRepository.getOne(id),
+        productRepository.getOne,
         AsyncResult.bind(async product => {
             if (!product) {
                 return failure(
@@ -23,9 +23,30 @@ function ProductServiceFactory([productRepository]: [ProductRepository]) {
         }),
     );
 
+    const checkDuplicateTitle = (createProductDto: CreateProductDto) =>
+        pipe(
+            productRepository.getOneByTitle,
+            AsyncResult.bind(async product => {
+                if (!!product) {
+                    return failure(
+                        badRequest({
+                            message: 'Duplicate title',
+                        } as const),
+                    );
+                }
+                return success(createProductDto);
+            }),
+        )(createProductDto.title);
+
+    const add = pipe(
+        checkDuplicateTitle,
+        AsyncResult.bind(productRepository.add),
+    );
+
     return {
         getAll,
         getOne,
+        add,
     };
 }
 

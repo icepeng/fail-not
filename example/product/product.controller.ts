@@ -1,8 +1,9 @@
 import { controller } from '../../controller';
+import { Body, Param } from '../../decorators';
 import * as AsyncResult from '../../fp/async-result';
 import { pipe } from '../../fp/pipe';
 import { ok } from '../../response/ok';
-import { get, Route } from '../../router';
+import { get, post, Route } from '../../router';
 import { ProductService } from './product.service';
 
 function ProductControllerFactory([productService]: [ProductService]): Route[] {
@@ -17,12 +18,22 @@ function ProductControllerFactory([productService]: [ProductService]): Route[] {
     const getOne = get(
         ':id',
         pipe(
-            req => productService.getOne(+req.params.id),
+            Param('id'),
+            id => productService.getOne(+id),
             AsyncResult.match(products => ok({ products })),
         ),
     );
 
-    return controller('products', [getAll, getOne]);
+    const add = post(
+        '',
+        pipe(
+            Body,
+            body => productService.add(body),
+            AsyncResult.match(id => ok({ id })),
+        ),
+    );
+
+    return controller('products', [getAll, getOne, add]);
 }
 
 export const ProductController = ProductControllerFactory([ProductService]);

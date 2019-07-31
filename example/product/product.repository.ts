@@ -1,6 +1,7 @@
 import { Product } from './product.interface';
 import { AsyncResult } from '../../fp/async-result';
 import { success } from '../../fp/result';
+import { CreateProductDto } from './dtos/create-product.dto';
 
 function ProductRepositoryFactory() {
     const DATA = [
@@ -23,9 +24,24 @@ function ProductRepositoryFactory() {
         return success(DATA.find(x => x.id === id));
     }
 
+    async function getOneByTitle(title: string): AsyncResult<Product, never> {
+        return success(DATA.find(x => x.title === title));
+    }
+
+    async function add(createProductDto: CreateProductDto): AsyncResult<number, never> {
+        const id = DATA[DATA.length - 1].id + 1;
+        DATA.push({
+            id,
+            ...createProductDto,
+        });
+        return success(id);
+    }
+
     return {
         getAll,
         getOne,
+        getOneByTitle,
+        add,
     };
 }
 
