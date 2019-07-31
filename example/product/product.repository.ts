@@ -7,12 +7,12 @@ function ProductRepositoryFactory() {
     const DATA = [
         {
             id: 1,
-            title: '콜라',
+            title: 'Coke',
             price: 2000,
         },
         {
             id: 2,
-            title: '펩시',
+            title: 'Water',
             price: 1000,
         },
     ];
