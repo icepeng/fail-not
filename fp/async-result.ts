@@ -39,9 +39,12 @@ export function bind<A, B, E>(fn: (x: A) => AsyncResult<B, E>) {
 export function match<A, B>(fn: (x: A) => B): <E>(x: AsyncResult<A, E>) => Promise<B | E>;
 export function match<A, B, C, E>(fn: (x: A) => B, errFn: (x: E) => C): (x: AsyncResult<A, E>) => Promise<B | C>;
 export function match<A, B, C, E>(fn: (x: A) => B, errFn?: (x: E) => C) {
-    return async (xPromise: AsyncResult<A, E>): Promise<B | C> => {
+    return async (xPromise: AsyncResult<A, E>): Promise<B | C | E> => {
         const x = await xPromise;
         if (x.success === false) {
+            if (!errFn) {
+                return x.err;
+            }
             return errFn(x.err);
         }
         return fn(x.value);

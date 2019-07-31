@@ -1,8 +1,8 @@
-import { ProductRepository } from './product.repository';
-import { pipe } from '../../fp/pipe';
 import * as AsyncResult from '../../fp/async-result';
+import { pipe } from '../../fp/pipe';
 import { failure, success } from '../../fp/result';
 import { notFound } from '../../response/not-found';
+import { ProductRepository } from './product.repository';
 
 function ProductServiceFactory([productRepository]: [ProductRepository]) {
     function getAll() {
