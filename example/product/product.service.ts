@@ -2,6 +2,7 @@ import { ProductRepository } from './product.repository';
 import { pipe } from '../../fp/pipe';
 import * as AsyncResult from '../../fp/async-result';
 import { failure, success } from '../../fp/result';
+import { notFound } from '../../response/not-found';
 
 function ProductServiceFactory([productRepository]: [ProductRepository]) {
     function getAll() {
@@ -12,7 +13,11 @@ function ProductServiceFactory([productRepository]: [ProductRepository]) {
         (id: number) => productRepository.getOne(id),
         AsyncResult.bind(async product => {
             if (!product) {
-                return failure('Not found');
+                return failure(
+                    notFound({
+                        message: 'Product not found',
+                    } as const),
+                );
             }
             return success(product);
         }),

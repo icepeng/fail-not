@@ -15,11 +15,11 @@ function ProductRepositoryFactory() {
             price: 1000,
         },
     ];
-    async function getAll(): AsyncResult<Product[]> {
+    async function getAll(): AsyncResult<Product[], never> {
         return success(DATA);
     }
 
-    async function getOne(id: number): AsyncResult<Product> {
+    async function getOne(id: number): AsyncResult<Product, never> {
         return success(DATA.find(x => x.id === id));
     }
 

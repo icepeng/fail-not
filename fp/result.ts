@@ -3,29 +3,29 @@ export interface Success<T> {
     value: T;
 }
 
-export interface Failure {
+export interface Failure<T> {
     success: false;
-    message: string;
+    err: T;
 }
 
-export type Result<T> = Success<T> | Failure;
+export type Result<T, R> = Success<T> | Failure<R>;
 
-export function success<T>(value: T): Success<T> {
+export function success<T>(value: T): Result<T, never> {
     return {
         success: true,
         value,
     };
 }
 
-export function failure(message: string): Failure {
+export function failure<T>(err: T): Result<never, T> {
     return {
         success: false,
-        message,
+        err,
     };
 }
 
-export function map<T, R>(fn: (x: T) => R) {
-    return (x: Result<T>): Result<R> => {
+export function map<A, B>(fn: (x: A) => B) {
+    return <E>(x: Result<A, E>): Result<B, E> => {
         if (x.success === false) {
             return x;
         }
@@ -33,8 +33,8 @@ export function map<T, R>(fn: (x: T) => R) {
     };
 }
 
-export function apply<T, R>(fn: Result<(x: T) => R>) {
-    return (x: Result<T>): Result<R> => {
+export function apply<A, B, E>(fn: Result<(x: A) => B, E>) {
+    return <E2>(x: Result<A, E2>): Result<B, E | E2> => {
         if (fn.success === false) {
             return fn;
         }
@@ -42,14 +42,23 @@ export function apply<T, R>(fn: Result<(x: T) => R>) {
     };
 }
 
-export function liftA2<T, R, E>(fn: (x: T) => (y: R) => E) {
-    return (x: Result<T>) => apply(map(fn)(x));
+export function liftA2<A, B, C>(fn: (x: A) => (y: B) => C) {
+    return <E>(x: Result<A, E>) => apply(map(fn)(x));
 }
 
-export function bind<T, R>(fn: (x: T) => Result<R>) {
-    return (x: Result<T>): Result<R> => {
+export function bind<T, R, E>(fn: (x: T) => Result<R, E>) {
+    return <E2>(x: Result<T, E2>): Result<R, E | E2> => {
         if (x.success === false) {
             return x;
+        }
+        return fn(x.value);
+    };
+}
+
+export function match<A, B, C, E>(fn: (x: A) => B, errFn: (x: E) => C) {
+    return (x: Result<A, E>): B | C => {
+        if (x.success === false) {
+            return errFn(x.err);
         }
         return fn(x.value);
     };
