@@ -14,3 +14,12 @@ Content-Type: application/json
     "title": "콜라2",
     "price": 2000
 }
+
+###
+PUT http://localhost:3000/products/3
+Content-Type: application/json
+
+{
+    "title": "콜라2",
+    "price": 3000
+}

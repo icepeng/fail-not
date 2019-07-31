@@ -43,10 +43,17 @@ function ProductServiceFactory([productRepository]: [ProductRepository]) {
         AsyncResult.bind(productRepository.add),
     );
 
+    const edit = (id: number, editProductDto: CreateProductDto) =>
+        pipe(
+            () => getOne(id),
+            AsyncResult.bind(() => productRepository.edit(id, editProductDto)),
+        )({});
+
     return {
         getAll,
         getOne,
         add,
+        edit,
     };
 }
 

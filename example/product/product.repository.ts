@@ -1,6 +1,6 @@
 import { Product } from './product.interface';
 import { AsyncResult } from '../../fp/async-result';
-import { success } from '../../fp/result';
+import { success, failure } from '../../fp/result';
 import { CreateProductDto } from './dtos/create-product.dto';
 
 function ProductRepositoryFactory() {
@@ -37,11 +37,24 @@ function ProductRepositoryFactory() {
         return success(id);
     }
 
+    async function edit(id: number, editProductDto: CreateProductDto): AsyncResult<number, never> {
+        const existing = DATA.find(x => x.id === id);
+        if (!existing) {
+            return success(0);
+        }
+
+        existing.price = editProductDto.price;
+        existing.title = editProductDto.title;
+
+        return success(1);
+    }
+
     return {
         getAll,
         getOne,
         getOneByTitle,
         add,
+        edit,
     };
 }
 
