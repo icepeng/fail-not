@@ -1,4 +1,4 @@
-import { Route } from './router';
+import { Route } from './route';
 import { join } from 'path';
 
 export function controller(path: string, routes: Route[]): Route[] {

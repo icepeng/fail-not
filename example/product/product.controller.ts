@@ -1,10 +1,9 @@
 import { controller } from '../../controller';
-import { Body, Param, applyMany } from '../../decorators';
-import * as Array from '../../fp/array';
+import { applyMany, Body, Param } from '../../decorators';
 import * as AsyncResult from '../../fp/async-result';
 import { pipe } from '../../fp/pipe';
 import { ok } from '../../response/ok';
-import { get, post, put, Route } from '../../router';
+import { get, post, put, Route } from '../../route';
 import { ProductService } from './product.service';
 
 function ProductControllerFactory([productService]: [ProductService]): Route[] {
@@ -37,8 +36,8 @@ function ProductControllerFactory([productService]: [ProductService]): Route[] {
   const edit = put(
     ':id',
     pipe(
-      applyMany(Body, Param('id')),
-      ([body, id]) => productService.edit(+id, body),
+      applyMany(Param('id'), Body),
+      ([id, body]) => productService.edit(+id, body),
       AsyncResult.match(() => ok()),
     ),
   );

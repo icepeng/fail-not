@@ -1,6 +1,6 @@
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
-import { Route } from './router';
+import { Route } from './route';
 
 export function expressAdapter(routes: Route[]) {
     const app = express();

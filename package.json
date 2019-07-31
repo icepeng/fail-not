@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node example/index.ts",
+    "lint": "tslint -p tsconfig.json",
+    "build": "tsc",
     "test": "jest --config ./jest.json",
     "test:watch": "npm test -- --watch",
     "test:cov": "npm test -- --coverage"

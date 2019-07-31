@@ -3,7 +3,7 @@ import { ResponseModel } from './response/response-model.interface';
 
 type HTTP_VERB = 'get' | 'post' | 'delete' | 'put' | 'patch';
 
-export type Handler = (req?: Request) => ResponseModel<any> | Promise<ResponseModel<any>>;
+export type Handler = (req: Request) => ResponseModel<any> | Promise<ResponseModel<any>>;
 
 export interface Route {
     method: HTTP_VERB;
