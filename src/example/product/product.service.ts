@@ -13,11 +13,7 @@ function ProductServiceFactory([productRepository]: [ProductRepository]) {
     productRepository.getOne,
     AsyncResult.bind(async product => {
       if (!product) {
-        return failure(
-          notFound({
-            message: 'Product not found',
-          } as const),
-        );
+        return failure(notFound('Product not found' as const));
       }
       return success(product);
     }),
@@ -28,11 +24,7 @@ function ProductServiceFactory([productRepository]: [ProductRepository]) {
       productRepository.getOneByTitle,
       AsyncResult.bind(async product => {
         if (!!product) {
-          return failure(
-            badRequest({
-              message: 'Duplicate title',
-            } as const),
-          );
+          return failure(badRequest('Duplicate title' as const));
         }
         return success(createProductDto);
       }),

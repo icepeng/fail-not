@@ -2,6 +2,10 @@ import * as Result from './result';
 
 export type AsyncResult<T, R> = Promise<Result.Result<T, R>>;
 
+export function fromResult<T, R>(x: Result.Result<T, R>): AsyncResult<T, R> {
+  return Promise.resolve(x);
+}
+
 export function map<A, B>(fn: (x: A) => B) {
   return async <E>(xPromise: AsyncResult<A, E>): AsyncResult<B, E> => {
     const x = await xPromise;

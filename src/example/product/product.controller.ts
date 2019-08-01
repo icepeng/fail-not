@@ -5,6 +5,8 @@ import { pipe } from '../../fp/pipe';
 import { ok } from '../../response/ok';
 import { get, post, put, Route } from '../../route';
 import { ProductService } from './product.service';
+import * as Result from '../../fp/result';
+import { createProductDtoValidator } from './dtos/create-product.dto';
 
 function ProductControllerFactory([productService]: [ProductService]): Route[] {
   const getAll = get(
@@ -28,7 +30,10 @@ function ProductControllerFactory([productService]: [ProductService]): Route[] {
     '',
     pipe(
       Body(),
-      body => productService.add(body),
+      Result.success,
+      createProductDtoValidator,
+      AsyncResult.fromResult,
+      AsyncResult.bind(body => productService.add(body)),
       AsyncResult.match(id => ok({ id })),
     ),
   );
