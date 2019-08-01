@@ -6,8 +6,8 @@
     "noLib": false,
     "target": "es6",
     "sourceMap": true,
-    "allowJs": true,
     "lib": ["esnext", "dom"],
     "outDir": "./dist"
-  }
+  },
+  "include": ["src"],
 }

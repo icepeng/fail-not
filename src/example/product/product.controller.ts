@@ -27,7 +27,7 @@ function ProductControllerFactory([productService]: [ProductService]): Route[] {
   const add = post(
     '',
     pipe(
-      Body,
+      Body(),
       body => productService.add(body),
       AsyncResult.match(id => ok({ id })),
     ),
@@ -36,9 +36,9 @@ function ProductControllerFactory([productService]: [ProductService]): Route[] {
   const edit = put(
     ':id',
     pipe(
-      applyMany(Param('id'), Body),
+      applyMany(Param('id'), Body()),
       ([id, body]) => productService.edit(+id, body),
-      AsyncResult.match(() => ok()),
+      AsyncResult.match(() => ok({})),
     ),
   );
 

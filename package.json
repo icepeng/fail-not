@@ -4,9 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node example/index.ts",
+    "start": "ts-node src/example/index.ts",
+    "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json",
     "build": "tsc",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A",
+    "postversion": "git push && git push --tags && npm run docs:generate && npm run docs:publish",
     "test": "jest --config ./jest.json",
     "test:watch": "npm test -- --watch",
     "test:cov": "npm test -- --coverage"

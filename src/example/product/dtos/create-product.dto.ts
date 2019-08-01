@@ -1,5 +1,5 @@
 export interface CreateProductDto {
-    title: string;
+  title: string;
 
-    price: number;
+  price: number;
 }

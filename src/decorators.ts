@@ -2,9 +2,9 @@ import { Request } from 'express';
 
 export type Decorator<T> = (req: Request) => T;
 
-export const Req = (req: Request) => req;
+export const Req = () => (req: Request) => req;
 
-export const Body = (req: Request) => req.body;
+export const Body = () => (req: Request) => req.body;
 
 export const Param = (key: string) => (req: Request) =>
   req.params[key] as string;
@@ -43,6 +43,6 @@ export function applyMany<A, B, C, D, E, F>(
   fnE: Decorator<E>,
   fnF: Decorator<F>,
 ): (x: Request) => [A, B, C, D, E, F];
-export function applyMany(...decorators: Decorator<any>[]) {
+export function applyMany(...decorators: Array<Decorator<any>>) {
   return (req: Request) => decorators.map(decorator => decorator(req));
 }
