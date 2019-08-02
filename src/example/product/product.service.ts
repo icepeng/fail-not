@@ -1,4 +1,4 @@
-import { AsyncResult, notFound, pipe, Result } from '../..';
+import { AsyncResult, existing, ifElse, notFound, pipe, Result } from '../..';
 import { badRequest } from '../../response/bad-request';
 import { CreateProductDto } from './dtos/create-product.dto';
 import { ProductRepository } from './product.repository';
@@ -8,23 +8,25 @@ function ProductServiceFactory([productRepository]: [ProductRepository]) {
 
   const getOne = pipe(
     productRepository.getOne,
-    AsyncResult.bind(async product => {
-      if (!product) {
-        return Result.failure(notFound('Product not found' as const));
-      }
-      return Result.success(product);
-    }),
+    AsyncResult.bind(
+      ifElse({
+        if: existing,
+        then: Result.success,
+        else: () => Result.failure(notFound('Product not found' as const)),
+      }),
+    ),
   );
 
   const checkDuplicateTitle = (createProductDto: CreateProductDto) =>
     pipe(
       productRepository.getOneByTitle,
-      AsyncResult.bind(async product => {
-        if (!!product) {
-          return Result.failure(badRequest('Duplicate title' as const));
-        }
-        return Result.success(createProductDto);
-      }),
+      AsyncResult.bind(
+        ifElse({
+          if: existing,
+          then: () => Result.failure(badRequest('Duplicate title' as const)),
+          else: () => Result.success(createProductDto),
+        }),
+      ),
     )(createProductDto.title);
 
   const add = pipe(

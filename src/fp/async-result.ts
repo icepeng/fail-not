@@ -30,7 +30,7 @@ function liftA2<A, B, C>(fn: (x: A) => (y: B) => C) {
   return <E>(x: AsyncResult<A, E>) => apply(map(fn)(x));
 }
 
-function bind<A, B, E>(fn: (x: A) => AsyncResult<B, E>) {
+function bind<A, B, E>(fn: (x: A) => AsyncResult<B, E> | Result<B, E>) {
   return async <E2>(xPromise: AsyncResult<A, E2>): AsyncResult<B, E | E2> => {
     const x = await xPromise;
     if (x.success === false) {
