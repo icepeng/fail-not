@@ -1,21 +1,22 @@
 import {
-  createProductDtoValidator,
-  CreateProductDto,
-} from './dtos/create-product.dto';
-import { ProductService } from './product.service';
-import {
+  applyMany,
+  AsyncResult,
+  Body,
+  controller,
   get,
+  ok,
+  Param,
+  pipe,
   post,
   put,
   Route,
-  controller,
-  applyMany,
-  Body,
-  Param,
-  ok,
-  pipe,
-  AsyncResult,
+  toInt,
 } from '../..';
+import {
+  CreateProductDto,
+  createProductDtoValidator,
+} from './dtos/create-product.dto';
+import { ProductService } from './product.service';
 
 function ProductControllerFactory([productService]: [ProductService]): Route[] {
   const getAll = get(
@@ -29,8 +30,8 @@ function ProductControllerFactory([productService]: [ProductService]): Route[] {
   const getOne = get(
     ':id',
     pipe(
-      Param('id'),
-      id => productService.getOne(+id),
+      Param('id', toInt),
+      productService.getOne,
       AsyncResult.match(products => ok({ products })),
     ),
   );
@@ -49,12 +50,12 @@ function ProductControllerFactory([productService]: [ProductService]): Route[] {
   const edit = put(
     ':id',
     pipe(
-      applyMany(Param('id'), Body<CreateProductDto>()),
+      applyMany(Param('id', toInt), Body<CreateProductDto>()),
       ([id, body]) =>
         pipe(
           createProductDtoValidator,
           AsyncResult.fromResult,
-          AsyncResult.bind(validated => productService.edit(+id, validated)),
+          AsyncResult.bind(validated => productService.edit(id, validated)),
           AsyncResult.match(() => ok({})),
         )(body),
     ),

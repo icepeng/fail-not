@@ -5,3 +5,4 @@ export * from './result';
 export * from './pipe';
 export * from './if-else';
 export * from './existing';
+export * from './to-int';
