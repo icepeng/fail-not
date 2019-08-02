@@ -1,12 +1,21 @@
-import { controller } from '../../controller';
-import { applyMany, Body, Param } from '../../decorators';
-import * as AsyncResult from '../../fp/async-result';
-import { pipe } from '../../fp/pipe';
-import { ok } from '../../response/ok';
-import { get, post, put, Route } from '../../route';
+import {
+  createProductDtoValidator,
+  CreateProductDto,
+} from './dtos/create-product.dto';
 import { ProductService } from './product.service';
-import * as Result from '../../fp/result';
-import { createProductDtoValidator } from './dtos/create-product.dto';
+import {
+  get,
+  post,
+  put,
+  Route,
+  controller,
+  applyMany,
+  Body,
+  Param,
+  ok,
+  pipe,
+  AsyncResult,
+} from '../..';
 
 function ProductControllerFactory([productService]: [ProductService]): Route[] {
   const getAll = get(
@@ -30,7 +39,6 @@ function ProductControllerFactory([productService]: [ProductService]): Route[] {
     '',
     pipe(
       Body(),
-      Result.success,
       createProductDtoValidator,
       AsyncResult.fromResult,
       AsyncResult.bind(body => productService.add(body)),
@@ -41,9 +49,14 @@ function ProductControllerFactory([productService]: [ProductService]): Route[] {
   const edit = put(
     ':id',
     pipe(
-      applyMany(Param('id'), Body()),
-      ([id, body]) => productService.edit(+id, body),
-      AsyncResult.match(() => ok({})),
+      applyMany(Param('id'), Body<CreateProductDto>()),
+      ([id, body]) =>
+        pipe(
+          createProductDtoValidator,
+          AsyncResult.fromResult,
+          AsyncResult.bind(validated => productService.edit(+id, validated)),
+          AsyncResult.match(() => ok({})),
+        )(body),
     ),
   );
 

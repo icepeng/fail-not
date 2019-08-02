@@ -1,4 +1,4 @@
-import { Request } from 'express';
+import { Request } from './request';
 import { ResponseModel } from './response/response-model.interface';
 
 type HTTP_VERB = 'get' | 'post' | 'delete' | 'put' | 'patch';

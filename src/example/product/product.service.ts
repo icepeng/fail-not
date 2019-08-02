@@ -1,10 +1,7 @@
-import * as AsyncResult from '../../fp/async-result';
-import { pipe } from '../../fp/pipe';
-import { failure, success } from '../../fp/result';
-import { notFound } from '../../response/not-found';
-import { ProductRepository } from './product.repository';
-import { CreateProductDto } from './dtos/create-product.dto';
+import { AsyncResult, notFound, pipe, Result } from '../..';
 import { badRequest } from '../../response/bad-request';
+import { CreateProductDto } from './dtos/create-product.dto';
+import { ProductRepository } from './product.repository';
 
 function ProductServiceFactory([productRepository]: [ProductRepository]) {
   const getAll = () => productRepository.getAll();
@@ -13,9 +10,9 @@ function ProductServiceFactory([productRepository]: [ProductRepository]) {
     productRepository.getOne,
     AsyncResult.bind(async product => {
       if (!product) {
-        return failure(notFound('Product not found' as const));
+        return Result.failure(notFound('Product not found' as const));
       }
-      return success(product);
+      return Result.success(product);
     }),
   );
 
@@ -24,9 +21,9 @@ function ProductServiceFactory([productRepository]: [ProductRepository]) {
       productRepository.getOneByTitle,
       AsyncResult.bind(async product => {
         if (!!product) {
-          return failure(badRequest('Duplicate title' as const));
+          return Result.failure(badRequest('Duplicate title' as const));
         }
-        return success(createProductDto);
+        return Result.success(createProductDto);
       }),
     )(createProductDto.title);
 

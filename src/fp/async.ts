@@ -21,3 +21,10 @@ export function bind<T, R>(fn: (x: T) => Promise<R>) {
     return xPromise.then(fn);
   };
 }
+
+export const Async = {
+  map,
+  apply,
+  liftA2,
+  bind,
+};
