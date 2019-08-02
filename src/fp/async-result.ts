@@ -2,6 +2,20 @@ import { Result } from './result';
 
 export type AsyncResult<T, R> = Promise<Result<T, R>>;
 
+async function success<T>(value: T): AsyncResult<T, never> {
+  return {
+    success: true,
+    value,
+  };
+}
+
+async function failure<T>(err: T): AsyncResult<never, T> {
+  return {
+    success: false,
+    err,
+  };
+}
+
 function fromResult<T, R>(x: Result<T, R>): AsyncResult<T, R> {
   return Promise.resolve(x);
 }
@@ -61,6 +75,8 @@ function match<A, B, C, E>(fn: (x: A) => B, errFn?: (x: E) => C) {
 }
 
 export const AsyncResult = {
+  success,
+  failure,
   fromResult,
   map,
   apply,

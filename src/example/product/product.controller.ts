@@ -1,5 +1,4 @@
 import {
-  applyMany,
   AsyncResult,
   Body,
   controller,
@@ -36,28 +35,36 @@ function ProductControllerFactory([productService]: [ProductService]): Route[] {
     ),
   );
 
+  const validateBody = pipe(
+    Body(),
+    createProductDtoValidator,
+    AsyncResult.fromResult,
+  );
+
   const add = post(
     '',
     pipe(
-      Body(),
-      createProductDtoValidator,
-      AsyncResult.fromResult,
+      validateBody,
       AsyncResult.bind(body => productService.add(body)),
       AsyncResult.match(id => ok({ id })),
     ),
   );
 
+  const getId = pipe(
+    Param('id', toInt),
+    AsyncResult.success,
+  );
+
   const edit = put(
     ':id',
     pipe(
-      applyMany(Param('id', toInt), Body<CreateProductDto>()),
-      ([id, body]) =>
-        pipe(
-          createProductDtoValidator,
-          AsyncResult.fromResult,
-          AsyncResult.bind(validated => productService.edit(id, validated)),
-          AsyncResult.match(() => ok({})),
-        )(body),
+      req =>
+        AsyncResult.liftA2((id: number) => (body: CreateProductDto) => ({
+          id,
+          body,
+        }))(getId(req))(validateBody(req)),
+      AsyncResult.bind(({ id, body }) => productService.edit(id, body)),
+      AsyncResult.match(() => ok({})),
     ),
   );
 
