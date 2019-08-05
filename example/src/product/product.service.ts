@@ -1,11 +1,13 @@
 import {
+  AsyncInjector,
   AsyncResult,
+  badRequest,
   existing,
   ifElse,
   notFound,
   pipe,
   Result,
-  badRequest,
+  Unpacked,
 } from 'fail-not-core';
 import { CreateProductDto } from './dtos/create-product.dto';
 import { ProductRepository } from './product.repository';
@@ -13,7 +15,7 @@ import { ProductRepository } from './product.repository';
 export function ProductServiceFactory([productRepository]: [
   ProductRepository,
 ]) {
-  const getAll = () => productRepository.getAll();
+  const getAll = productRepository.getAll;
 
   const getOne = pipe(
     productRepository.getOne,
@@ -57,5 +59,7 @@ export function ProductServiceFactory([productRepository]: [
   };
 }
 
-export const ProductService = ProductServiceFactory([ProductRepository]);
-export type ProductService = typeof ProductService;
+export const ProductService = AsyncInjector(ProductServiceFactory, [
+  ProductRepository,
+]);
+export type ProductService = Unpacked<typeof ProductService>;

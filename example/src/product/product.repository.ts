@@ -1,58 +1,64 @@
-import { AsyncResult, Result } from 'fail-not-core';
+import {
+  AsyncInjector,
+  AsyncResult,
+  Unpacked,
+  internalServerError,
+  InternalServerError,
+} from 'fail-not-core';
+import { TypeormService } from '../typeorm.service';
 import { CreateProductDto } from './dtos/create-product.dto';
-import { Product } from './product.interface';
+import { Product } from './product.entity';
 
-function ProductRepositoryFactory() {
-  const DATA = [
-    {
-      id: 1,
-      title: 'Coke',
-      price: 2000,
-    },
-    {
-      id: 2,
-      title: 'Water',
-      price: 1000,
-    },
-  ];
-  async function getAll(): AsyncResult<Product[], never> {
-    return Result.success(DATA);
+function ProductRepositoryFactory([{ connection }]: [TypeormService]) {
+  const productRepo = connection.getRepository(Product);
+
+  async function getAll(): AsyncResult<
+    Product[],
+    InternalServerError<'DB_ERROR'>
+  > {
+    return productRepo
+      .find()
+      .then(AsyncResult.success)
+      .catch(() => AsyncResult.failure(internalServerError('DB_ERROR')));
   }
 
-  async function getOne(id: number): AsyncResult<Product | undefined, never> {
-    return Result.success(DATA.find(x => x.id === id));
+  async function getOne(
+    id: number,
+  ): AsyncResult<Product | undefined, InternalServerError<'DB_ERROR'>> {
+    return productRepo
+      .findOne(id)
+      .then(AsyncResult.success)
+      .catch(() => AsyncResult.failure(internalServerError('DB_ERROR')));
   }
 
   async function getOneByTitle(
     title: string,
-  ): AsyncResult<Product | undefined, never> {
-    return Result.success(DATA.find(x => x.title === title));
+  ): AsyncResult<Product | undefined, InternalServerError<'DB_ERROR'>> {
+    return productRepo
+      .findOne({ title })
+      .then(AsyncResult.success)
+      .catch(() => AsyncResult.failure(internalServerError('DB_ERROR')));
   }
 
   async function add(
     createProductDto: CreateProductDto,
-  ): AsyncResult<number, never> {
-    const id = DATA[DATA.length - 1].id + 1;
-    DATA.push({
-      id,
-      ...createProductDto,
-    });
-    return Result.success(id);
+  ): AsyncResult<number, InternalServerError<'DB_ERROR'>> {
+    const product = productRepo.create(createProductDto);
+    return productRepo
+      .save(product)
+      .then(res => AsyncResult.success(res.id))
+      .catch(() => AsyncResult.failure(internalServerError('DB_ERROR')));
   }
 
   async function edit(
     id: number,
     editProductDto: CreateProductDto,
-  ): AsyncResult<number, never> {
-    const existing = DATA.find(x => x.id === id);
-    if (!existing) {
-      return Result.success(0);
-    }
-
-    existing.price = editProductDto.price;
-    existing.title = editProductDto.title;
-
-    return Result.success(1);
+  ): AsyncResult<number, InternalServerError<'DB_ERROR'>> {
+    const product = productRepo.create({ id, ...editProductDto });
+    return productRepo
+      .save(product)
+      .then(res => AsyncResult.success(res.id))
+      .catch(() => AsyncResult.failure(internalServerError('DB_ERROR')));
   }
 
   return {
@@ -64,5 +70,7 @@ function ProductRepositoryFactory() {
   };
 }
 
-export const ProductRepository = ProductRepositoryFactory();
-export type ProductRepository = typeof ProductRepository;
+export const ProductRepository = AsyncInjector(ProductRepositoryFactory, [
+  TypeormService,
+]);
+export type ProductRepository = Unpacked<typeof ProductRepository>;

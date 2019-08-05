@@ -1,3 +1,3 @@
 import { ProductController } from './product/product.controller';
 
-export const AppRoutes = [...ProductController];
+export const AppControllers = [ProductController];

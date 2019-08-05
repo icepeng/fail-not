@@ -1,8 +1,8 @@
 import { expressAdapter } from 'fail-not-core';
-import { AppRoutes } from './app.routes';
+import { AppControllers } from './app.controllers';
 
-function bootstrap() {
-  const app = expressAdapter(AppRoutes);
+async function bootstrap() {
+  const app = await expressAdapter(AppControllers);
 
   // tslint:disable-next-line: no-console
   console.log('Listening on port 3000');

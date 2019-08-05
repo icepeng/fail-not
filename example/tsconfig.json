@@ -6,7 +6,9 @@
     "removeComments": true,
     "target": "es6",
     "sourceMap": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true
   },
   "include": ["src"],
 }

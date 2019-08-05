@@ -62,6 +62,34 @@ function bind<A, B, E>(fn: (x: A) => AsyncResult<B, E> | Result<B, E>) {
   };
 }
 
+function bindFailure<A, B, E, E2>(
+  fn: (x: E2) => AsyncResult<B, E> | Result<B, E>,
+) {
+  return async (
+    xPromise: AsyncResult<A, E2> | Result<A, E2>,
+  ): AsyncResult<A | B, E> => {
+    const x = await xPromise;
+    if (x.success === true) {
+      return x;
+    }
+    return fn(x.err);
+  };
+}
+
+function tap<A, E>(fn: (x: A) => void, errFn?: (x: E) => void) {
+  return async (xPromise: AsyncResult<A, E>): AsyncResult<A, E> => {
+    const x = await xPromise;
+    if (x.success === false) {
+      if (errFn) {
+        errFn(x.err);
+      }
+      return x;
+    }
+    fn(x.value);
+    return x;
+  };
+}
+
 function match<A, B>(
   fn: (x: A) => B,
 ): <E>(x: AsyncResult<A, E>) => Promise<B | E>;
@@ -90,5 +118,7 @@ export const AsyncResult = {
   apply,
   liftA2,
   bind,
+  bindFailure,
+  tap,
   match,
 };

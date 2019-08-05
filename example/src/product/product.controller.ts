@@ -1,4 +1,5 @@
 import {
+  AsyncInjector,
   AsyncResult,
   Body,
   controller,
@@ -12,7 +13,10 @@ import {
   Result,
   toInt,
 } from 'fail-not-core';
-import { createProductDtoValidator } from './dtos/create-product.dto';
+import {
+  CreateProductDto,
+  createProductDtoValidator,
+} from './dtos/create-product.dto';
 import { ProductService } from './product.service';
 
 function ProductControllerFactory([productService]: [
@@ -50,7 +54,9 @@ function ProductControllerFactory([productService]: [
     ':id',
     pipe(
       req =>
-        AsyncResult.liftA2(productService.edit)(
+        AsyncResult.liftA2((id: number) => (body: CreateProductDto) =>
+          [id, body] as const,
+        )(
           pipe(
             Param('id'),
             toInt,
@@ -62,6 +68,7 @@ function ProductControllerFactory([productService]: [
             createProductDtoValidator,
           )(req),
         ),
+      AsyncResult.bind(([id, body]) => productService.edit(id)(body)),
       AsyncResult.match(() => ok({})),
     ),
   );
@@ -69,4 +76,6 @@ function ProductControllerFactory([productService]: [
   return controller('products', [getAll, getOne, add, edit]);
 }
 
-export const ProductController = ProductControllerFactory([ProductService]);
+export const ProductController = AsyncInjector(ProductControllerFactory, [
+  ProductService,
+]);
