@@ -3,17 +3,19 @@ import { ResponseModel } from './response/response-model.interface';
 
 type HTTP_VERB = 'get' | 'post' | 'delete' | 'put' | 'patch';
 
-export type Handler = (
-  req: Request,
-) => ResponseModel<any> | Promise<ResponseModel<any>>;
+export type Handler<T extends ResponseModel> = (req: Request) => T | Promise<T>;
 
-export interface Route {
+export interface Route<T extends ResponseModel> {
   method: HTTP_VERB;
   path: string;
-  handler: Handler;
+  handler: Handler<T>;
 }
 
-function route(method: HTTP_VERB, path: string, handler: Handler): Route {
+function route<T extends ResponseModel>(
+  method: HTTP_VERB,
+  path: string,
+  handler: Handler<T>,
+): Route<T> {
   return {
     method,
     path,
@@ -21,22 +23,37 @@ function route(method: HTTP_VERB, path: string, handler: Handler): Route {
   };
 }
 
-export function get(path: string, handler: Handler) {
+export function get<T extends ResponseModel>(
+  path: string,
+  handler: Handler<T>,
+) {
   return route('get', path, handler);
 }
 
-export function post(path: string, handler: Handler) {
+export function post<T extends ResponseModel>(
+  path: string,
+  handler: Handler<T>,
+) {
   return route('post', path, handler);
 }
 
-export function del(path: string, handler: Handler) {
+export function del<T extends ResponseModel>(
+  path: string,
+  handler: Handler<T>,
+) {
   return route('delete', path, handler);
 }
 
-export function put(path: string, handler: Handler) {
+export function put<T extends ResponseModel>(
+  path: string,
+  handler: Handler<T>,
+) {
   return route('put', path, handler);
 }
 
-export function patch(path: string, handler: Handler) {
+export function patch<T extends ResponseModel>(
+  path: string,
+  handler: Handler<T>,
+) {
   return route('patch', path, handler);
 }

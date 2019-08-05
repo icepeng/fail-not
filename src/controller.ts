@@ -1,5 +1,7 @@
 import { Route } from './route';
 
-export function controller(path: string, routes: Route[]): Route[] {
+export type Controller = ReadonlyArray<Route<any>>;
+
+export function controller(path: string, routes: Controller): Controller {
   return routes.map(x => ({ ...x, path: '/' + path + '/' + x.path }));
 }

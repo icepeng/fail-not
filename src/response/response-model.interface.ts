@@ -1,4 +1,4 @@
-export interface ResponseModel<T> {
+export interface ResponseModel {
   readonly status: number;
-  readonly data: T;
+  readonly data: any;
 }

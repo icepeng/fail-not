@@ -8,16 +8,16 @@ import {
   pipe,
   post,
   put,
-  Route,
+  Result,
   toInt,
 } from '../..';
-import {
-  CreateProductDto,
-  createProductDtoValidator,
-} from './dtos/create-product.dto';
+import { Controller } from '../../controller';
+import { createProductDtoValidator } from './dtos/create-product.dto';
 import { ProductService } from './product.service';
 
-function ProductControllerFactory([productService]: [ProductService]): Route[] {
+function ProductControllerFactory([productService]: [
+  ProductService
+]): Controller {
   const getAll = get(
     '',
     pipe(
@@ -29,41 +29,39 @@ function ProductControllerFactory([productService]: [ProductService]): Route[] {
   const getOne = get(
     ':id',
     pipe(
-      Param('id', toInt),
+      Param('id'),
+      toInt,
       productService.getOne,
       AsyncResult.match(products => ok({ products })),
     ),
   );
 
-  const validateBody = pipe(
-    Body(),
-    createProductDtoValidator,
-    AsyncResult.fromResult,
-  );
-
   const add = post(
     '',
     pipe(
-      validateBody,
-      AsyncResult.bind(body => productService.add(body)),
+      Body(),
+      createProductDtoValidator,
+      AsyncResult.bind(productService.add),
       AsyncResult.match(id => ok({ id })),
     ),
-  );
-
-  const getId = pipe(
-    Param('id', toInt),
-    AsyncResult.success,
   );
 
   const edit = put(
     ':id',
     pipe(
       req =>
-        AsyncResult.liftA2((id: number) => (body: CreateProductDto) => ({
-          id,
-          body,
-        }))(getId(req))(validateBody(req)),
-      AsyncResult.bind(({ id, body }) => productService.edit(id, body)),
+        AsyncResult.liftA2(productService.edit)(
+          pipe(
+            Param('id'),
+            toInt,
+            Result.success,
+          )(req),
+        )(
+          pipe(
+            Body(),
+            createProductDtoValidator,
+          )(req),
+        ),
       AsyncResult.match(() => ok({})),
     ),
   );

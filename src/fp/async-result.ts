@@ -21,7 +21,9 @@ function fromResult<T, R>(x: Result<T, R>): AsyncResult<T, R> {
 }
 
 function map<A, B>(fn: (x: A) => B) {
-  return async <E>(xPromise: AsyncResult<A, E>): AsyncResult<B, E> => {
+  return async <E>(
+    xPromise: AsyncResult<A, E> | Result<A, E>,
+  ): AsyncResult<B, E> => {
     const x = await xPromise;
     if (x.success === false) {
       return x;
@@ -30,8 +32,12 @@ function map<A, B>(fn: (x: A) => B) {
   };
 }
 
-function apply<A, B, E>(fnPromise: AsyncResult<(x: A) => B, E>) {
-  return async <E2>(xPromise: AsyncResult<A, E2>): AsyncResult<B, E | E2> => {
+function apply<A, B, E>(
+  fnPromise: AsyncResult<(x: A) => B, E> | Result<(x: A) => B, E>,
+) {
+  return async <E2>(
+    xPromise: AsyncResult<A, E2> | Result<A, E2>,
+  ): AsyncResult<B, E | E2> => {
     const fn = await fnPromise;
     if (fn.success === false) {
       return fn;
@@ -41,11 +47,13 @@ function apply<A, B, E>(fnPromise: AsyncResult<(x: A) => B, E>) {
 }
 
 function liftA2<A, B, C>(fn: (x: A) => (y: B) => C) {
-  return <E>(x: AsyncResult<A, E>) => apply(map(fn)(x));
+  return <E>(x: AsyncResult<A, E> | Result<A, E>) => apply(map(fn)(x));
 }
 
 function bind<A, B, E>(fn: (x: A) => AsyncResult<B, E> | Result<B, E>) {
-  return async <E2>(xPromise: AsyncResult<A, E2>): AsyncResult<B, E | E2> => {
+  return async <E2>(
+    xPromise: AsyncResult<A, E2> | Result<A, E2>,
+  ): AsyncResult<B, E | E2> => {
     const x = await xPromise;
     if (x.success === false) {
       return x;

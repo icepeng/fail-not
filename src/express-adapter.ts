@@ -1,8 +1,8 @@
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
-import { Route } from './route';
+import { Controller } from './controller';
 
-export function expressAdapter(routes: Route[]) {
+export function expressAdapter(routes: Controller) {
   const app = express();
   app.use(bodyParser.json());
 
