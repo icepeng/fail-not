@@ -24,6 +24,14 @@ function failure<T>(err: T): Result<never, T> {
   };
 }
 
+function isSuccess(value: Result<any, any>) {
+  return value.success;
+}
+
+function isFailure(value: Result<any, any>) {
+  return !value.success;
+}
+
 function map<A, B>(fn: (x: A) => B) {
   return <E>(x: Result<A, E>): Result<B, E> => {
     if (x.success === false) {
@@ -75,6 +83,8 @@ function match<A, B, C, E>(fn: (x: A) => B, errFn?: (x: E) => C) {
 export const Result = {
   success,
   failure,
+  isSuccess,
+  isFailure,
   map,
   apply,
   liftA2,

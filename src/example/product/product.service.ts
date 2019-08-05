@@ -3,7 +3,7 @@ import { badRequest } from '../../response/bad-request';
 import { CreateProductDto } from './dtos/create-product.dto';
 import { ProductRepository } from './product.repository';
 
-function ProductServiceFactory([productRepository]: [ProductRepository]) {
+export function ProductServiceFactory([productRepository]: [ProductRepository]) {
   const getAll = () => productRepository.getAll();
 
   const getOne = pipe(
