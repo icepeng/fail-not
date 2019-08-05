@@ -1,0 +1,27 @@
+{
+  "name": "fail-not-example",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run build && node ./dist/index.js",
+    "lint": "tslint -p tsconfig.json",
+    "build": "tsc",
+    "test": "jest --config ./jest.json",
+    "test:watch": "npm test -- --watch",
+    "test:cov": "npm test -- --coverage"
+  },
+  "author": "icepeng",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^24.0.16",
+    "jest": "^24.8.0",
+    "ts-jest": "^24.0.2",
+    "ts-node": "^8.3.0",
+    "tslint": "^5.18.0",
+    "typescript": "^3.5.3"
+  },
+  "dependencies": {
+    "fail-not-core": "0.0.1-alpha.3"
+  }
+}

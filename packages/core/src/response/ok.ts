@@ -1,4 +1,4 @@
-interface Ok<T> {
+export interface Ok<T> {
   readonly status: 200;
   readonly data: T;
 }

@@ -1,4 +1,4 @@
-import { badRequest, pipe, Result } from '../../..';
+import { badRequest, pipe, Result } from 'fail-not-core';
 
 export interface CreateProductDto {
   title: string;

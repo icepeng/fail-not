@@ -1,4 +1,4 @@
-interface BadRequest<T> {
+export interface BadRequest<T> {
   readonly status: 400;
   readonly data: T;
 }

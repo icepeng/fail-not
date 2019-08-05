@@ -1,4 +1,4 @@
-import { AsyncResult, Result } from '../..';
+import { AsyncResult, Result } from 'fail-not-core';
 import { CreateProductDto } from './dtos/create-product.dto';
 import { Product } from './product.interface';
 

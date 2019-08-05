@@ -1,5 +1,4 @@
-import { Result } from '../../fp';
-import { badRequest, notFound } from '../../response';
+import { badRequest, notFound, Result } from 'fail-not-core';
 import { ProductRepository } from './product.repository';
 import { ProductService, ProductServiceFactory } from './product.service';
 

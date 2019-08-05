@@ -2,6 +2,7 @@ import {
   AsyncResult,
   Body,
   controller,
+  Controller,
   get,
   ok,
   Param,
@@ -10,13 +11,12 @@ import {
   put,
   Result,
   toInt,
-} from '../..';
-import { Controller } from '../../controller';
+} from 'fail-not-core';
 import { createProductDtoValidator } from './dtos/create-product.dto';
 import { ProductService } from './product.service';
 
 function ProductControllerFactory([productService]: [
-  ProductService
+  ProductService,
 ]): Controller {
   const getAll = get(
     '',

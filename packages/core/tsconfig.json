@@ -1,12 +1,10 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "declaration": true,
     "strict": true,
-    "removeComments": true,
-    "noLib": false,
-    "target": "es6",
-    "sourceMap": true,
-    "lib": ["esnext", "dom"],
+    "target": "es2017",
+    "sourceMap": false,
     "outDir": "./dist"
   },
   "include": ["src"],

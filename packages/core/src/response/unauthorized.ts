@@ -1,4 +1,4 @@
-interface Unauthorized<T> {
+export interface Unauthorized<T> {
   readonly status: 401;
   readonly data: T;
 }

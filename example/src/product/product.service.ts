@@ -1,9 +1,18 @@
-import { AsyncResult, existing, ifElse, notFound, pipe, Result } from '../..';
-import { badRequest } from '../../response/bad-request';
+import {
+  AsyncResult,
+  existing,
+  ifElse,
+  notFound,
+  pipe,
+  Result,
+  badRequest,
+} from 'fail-not-core';
 import { CreateProductDto } from './dtos/create-product.dto';
 import { ProductRepository } from './product.repository';
 
-export function ProductServiceFactory([productRepository]: [ProductRepository]) {
+export function ProductServiceFactory([productRepository]: [
+  ProductRepository,
+]) {
   const getAll = () => productRepository.getAll();
 
   const getOne = pipe(

@@ -1,4 +1,4 @@
-interface InternalServerError<T> {
+export interface InternalServerError<T> {
   readonly status: 500;
   readonly data: T;
 }

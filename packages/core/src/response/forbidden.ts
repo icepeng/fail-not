@@ -1,4 +1,4 @@
-interface Forbidden<T> {
+export interface Forbidden<T> {
   readonly status: 403;
   readonly data: T;
 }
