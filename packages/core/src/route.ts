@@ -11,6 +11,8 @@ export interface Route<T extends ResponseModel> {
   handler: Handler<T>;
 }
 
+export type Routes = ReadonlyArray<Route<any>>;
+
 function route<T extends ResponseModel>(
   method: HTTP_VERB,
   path: string,
@@ -56,4 +58,8 @@ export function patch<T extends ResponseModel>(
   handler: Handler<T>,
 ) {
   return route('patch', path, handler);
+}
+
+export function prefixRoutes(path: string, routes: Routes): Routes {
+  return routes.map(x => ({ ...x, path: '/' + path + '/' + x.path }));
 }

@@ -5,7 +5,7 @@ export interface TypeormService {
   entityManager: EntityManager;
 }
 
-async function TypeormServiceFactory(): Promise<TypeormService> {
+export async function TypeormServiceFactory(): Promise<TypeormService> {
   const connection = await createConnection();
 
   return {
@@ -13,5 +13,3 @@ async function TypeormServiceFactory(): Promise<TypeormService> {
     entityManager: connection.manager,
   };
 }
-
-export const TypeormService = TypeormServiceFactory();

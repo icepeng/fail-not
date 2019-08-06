@@ -1,8 +1,15 @@
 import { expressAdapter } from 'fail-not-core';
-import { AppControllers } from './app.controllers';
+import { ProductControllerFactory } from './product/product.controller';
+import { ProductRepositoryFactory } from './product/product.repository';
+import { ProductServiceFactory } from './product/product.service';
+import { TypeormServiceFactory } from './typeorm.service';
 
 async function bootstrap() {
-  const app = await expressAdapter(AppControllers);
+  const TypeormService = await TypeormServiceFactory();
+  const ProductRepository = await ProductRepositoryFactory([TypeormService]);
+  const ProductService = await ProductServiceFactory([ProductRepository]);
+  const ProductController = await ProductControllerFactory([ProductService]);
+  const app = expressAdapter(ProductController);
 
   // tslint:disable-next-line: no-console
   console.log('Listening on port 3000');

@@ -1,15 +1,14 @@
 import {
-  AsyncInjector,
   AsyncResult,
-  Unpacked,
   internalServerError,
   InternalServerError,
+  Injected,
 } from 'fail-not-core';
 import { TypeormService } from '../typeorm.service';
 import { CreateProductDto } from './dtos/create-product.dto';
 import { Product } from './product.entity';
 
-function ProductRepositoryFactory([{ connection }]: [TypeormService]) {
+export function ProductRepositoryFactory([{ connection }]: [TypeormService]) {
   const productRepo = connection.getRepository(Product);
 
   async function getAll(): AsyncResult<
@@ -70,7 +69,4 @@ function ProductRepositoryFactory([{ connection }]: [TypeormService]) {
   };
 }
 
-export const ProductRepository = AsyncInjector(ProductRepositoryFactory, [
-  TypeormService,
-]);
-export type ProductRepository = Unpacked<typeof ProductRepository>;
+export type ProductRepository = Injected<typeof ProductRepositoryFactory>;

@@ -54,12 +54,52 @@ function liftA2<A, B, C>(fn: (x: A) => (y: B) => C) {
   return <E>(x: Result<A, E>) => apply(map(fn)(x));
 }
 
+function combine<I, A, B, E, E2>(
+  fnA: (i: I) => Result<A, E>,
+  fnB: (i: I) => Result<B, E2>,
+): (i: I) => Result<[A, B], E | E2>;
+function combine<I, A, B, C, E, E2, E3>(
+  fnA: (i: I) => Result<A, E>,
+  fnB: (i: I) => Result<B, E2>,
+  fnC: (i: I) => Result<C, E3>,
+): (i: I) => Result<[A, B, C], E | E2 | E3>;
+function combine<I, A, B, C, D, E, E2, E3, E4>(
+  fnA: (i: I) => Result<A, E>,
+  fnB: (i: I) => Result<B, E2>,
+  fnC: (i: I) => Result<C, E3>,
+  fnD: (i: I) => Result<D, E4>,
+): (i: I) => Result<[A, B, C, D], E | E2 | E3 | E4>;
+function combine(...fns: Array<(a: any) => Result<any, any>>) {
+  return (i: any) => {
+    const results = fns.map(fn => fn(i));
+    const failed = results.find(r => r.success === false) as Failure<any>;
+    if (failed) {
+      return failed;
+    }
+
+    return success(results.map(r => (r as Success<any>).value));
+  };
+}
+
 function bind<T, R, E>(fn: (x: T) => Result<R, E>) {
   return <E2>(x: Result<T, E2>): Result<R, E | E2> => {
     if (x.success === false) {
       return x;
     }
     return fn(x.value);
+  };
+}
+
+function tap<A, E>(fn: (x: A) => void, errFn?: (x: E) => void) {
+  return (x: Result<A, E>): Result<A, E> => {
+    if (x.success === false) {
+      if (errFn) {
+        errFn(x.err);
+      }
+      return x;
+    }
+    fn(x.value);
+    return x;
   };
 }
 
@@ -87,7 +127,9 @@ export const Result = {
   isFailure,
   map,
   apply,
+  combine,
   liftA2,
   bind,
+  tap,
   match,
 };

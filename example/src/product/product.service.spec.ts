@@ -62,13 +62,13 @@ describe('ProductService', () => {
     it('should return success', async () => {
       expect(
         Result.isSuccess(
-          await productService.edit(1)({ title: 'Gatorade', price: 1000 }),
+          await productService.edit([1, { title: 'Gatorade', price: 1000 }]),
         ),
       ).toBe(true);
     });
     it('should return notFound when product does not exist', async () => {
       expect(
-        await productService.edit(-1)({ title: 'Gatorade', price: 1000 }),
+        await productService.edit([-1, { title: 'Gatorade', price: 1000 }]),
       ).toStrictEqual(Result.failure(notFound('Product not found')));
     });
   });

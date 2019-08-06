@@ -1,4 +1,4 @@
-import { Result } from './result';
+import { Failure, Result, Success } from './result';
 
 export type AsyncResult<T, R> = Promise<Result<T, R>>;
 
@@ -50,6 +50,33 @@ function liftA2<A, B, C>(fn: (x: A) => (y: B) => C) {
   return <E>(x: AsyncResult<A, E> | Result<A, E>) => apply(map(fn)(x));
 }
 
+function combine<I, A, B, E, E2>(
+  fnA: (i: I) => AsyncResult<A, E>,
+  fnB: (i: I) => AsyncResult<B, E2>,
+): (i: I) => AsyncResult<[A, B], E | E2>;
+function combine<I, A, B, C, E, E2, E3>(
+  fnA: (i: I) => AsyncResult<A, E>,
+  fnB: (i: I) => AsyncResult<B, E2>,
+  fnC: (i: I) => AsyncResult<C, E3>,
+): (i: I) => AsyncResult<[A, B, C], E | E2 | E3>;
+function combine<I, A, B, C, D, E, E2, E3, E4>(
+  fnA: (i: I) => AsyncResult<A, E>,
+  fnB: (i: I) => AsyncResult<B, E2>,
+  fnC: (i: I) => AsyncResult<C, E3>,
+  fnD: (i: I) => AsyncResult<D, E4>,
+): (i: I) => AsyncResult<[A, B, C, D], E | E2 | E3 | E4>;
+function combine(...fns: Array<(a: any) => AsyncResult<any, any>>) {
+  return async (i: any) => {
+    const results = await Promise.all(fns.map(fn => fn(i)));
+    const failed = results.find(r => r.success === false) as Failure<any>;
+    if (failed) {
+      return failed;
+    }
+
+    return success(results.map(r => (r as Success<any>).value));
+  };
+}
+
 function bind<A, B, E>(fn: (x: A) => AsyncResult<B, E> | Result<B, E>) {
   return async <E2>(
     xPromise: AsyncResult<A, E2> | Result<A, E2>,
@@ -59,20 +86,6 @@ function bind<A, B, E>(fn: (x: A) => AsyncResult<B, E> | Result<B, E>) {
       return x;
     }
     return fn(x.value);
-  };
-}
-
-function bindFailure<A, B, E, E2>(
-  fn: (x: E2) => AsyncResult<B, E> | Result<B, E>,
-) {
-  return async (
-    xPromise: AsyncResult<A, E2> | Result<A, E2>,
-  ): AsyncResult<A | B, E> => {
-    const x = await xPromise;
-    if (x.success === true) {
-      return x;
-    }
-    return fn(x.err);
   };
 }
 
@@ -117,8 +130,8 @@ export const AsyncResult = {
   map,
   apply,
   liftA2,
+  combine,
   bind,
-  bindFailure,
   tap,
   match,
 };

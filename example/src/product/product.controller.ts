@@ -1,27 +1,23 @@
 import {
-  AsyncInjector,
   AsyncResult,
   Body,
-  controller,
-  Controller,
   get,
   ok,
   Param,
   pipe,
   post,
+  prefixRoutes,
   put,
   Result,
+  Routes,
   toInt,
 } from 'fail-not-core';
-import {
-  CreateProductDto,
-  createProductDtoValidator,
-} from './dtos/create-product.dto';
+import { createProductDtoValidator } from './dtos/create-product.dto';
 import { ProductService } from './product.service';
 
-function ProductControllerFactory([productService]: [
+export function ProductControllerFactory([productService]: [
   ProductService,
-]): Controller {
+]): Routes {
   const getAll = get(
     '',
     pipe(
@@ -53,29 +49,21 @@ function ProductControllerFactory([productService]: [
   const edit = put(
     ':id',
     pipe(
-      req =>
-        AsyncResult.liftA2((id: number) => (body: CreateProductDto) =>
-          [id, body] as const,
-        )(
-          pipe(
-            Param('id'),
-            toInt,
-            Result.success,
-          )(req),
-        )(
-          pipe(
-            Body(),
-            createProductDtoValidator,
-          )(req),
+      Result.combine(
+        pipe(
+          Param('id'),
+          toInt,
+          Result.success,
         ),
-      AsyncResult.bind(([id, body]) => productService.edit(id)(body)),
+        pipe(
+          Body(),
+          createProductDtoValidator,
+        ),
+      ),
+      AsyncResult.bind(productService.edit),
       AsyncResult.match(() => ok({})),
     ),
   );
 
-  return controller('products', [getAll, getOne, add, edit]);
+  return prefixRoutes('products', [getAll, getOne, add, edit]);
 }
-
-export const ProductController = AsyncInjector(ProductControllerFactory, [
-  ProductService,
-]);

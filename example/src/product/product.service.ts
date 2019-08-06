@@ -1,13 +1,12 @@
 import {
-  AsyncInjector,
   AsyncResult,
   badRequest,
   existing,
   ifElse,
+  Injected,
   notFound,
   pipe,
   Result,
-  Unpacked,
 } from 'fail-not-core';
 import { CreateProductDto } from './dtos/create-product.dto';
 import { ProductRepository } from './product.repository';
@@ -45,7 +44,7 @@ export function ProductServiceFactory([productRepository]: [
     AsyncResult.bind(productRepository.add),
   );
 
-  const edit = (id: number) => (editProductDto: CreateProductDto) =>
+  const edit = ([id, editProductDto]: [number, CreateProductDto]) =>
     pipe(
       getOne,
       AsyncResult.bind(() => productRepository.edit(id, editProductDto)),
@@ -59,7 +58,4 @@ export function ProductServiceFactory([productRepository]: [
   };
 }
 
-export const ProductService = AsyncInjector(ProductServiceFactory, [
-  ProductRepository,
-]);
-export type ProductService = Unpacked<typeof ProductService>;
+export type ProductService = Injected<typeof ProductServiceFactory>;
