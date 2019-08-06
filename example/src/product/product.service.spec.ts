@@ -1,12 +1,13 @@
 import { badRequest, notFound, Result } from 'fail-not-core';
-import { ProductMockRepository } from './product.repository.mock';
+import { ProductRepositoryMockFactory } from './product.repository.mock';
 import { ProductService, ProductServiceFactory } from './product.service';
 
 describe('ProductService', () => {
   let productService: ProductService;
+  const productMockRepository = ProductRepositoryMockFactory();
 
   beforeEach(() => {
-    productService = ProductServiceFactory([ProductMockRepository]);
+    productService = ProductServiceFactory([productMockRepository]);
   });
 
   describe('getAll', () => {

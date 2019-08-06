@@ -3,7 +3,7 @@ import { CreateProductDto } from './dtos/create-product.dto';
 import { Product } from './product.entity';
 import { ProductRepository } from './product.repository';
 
-function ProductRepositoryMockFactory(): ProductRepository {
+export function ProductRepositoryMockFactory(): ProductRepository {
   const DATA = [
     {
       id: 1,
@@ -64,6 +64,3 @@ function ProductRepositoryMockFactory(): ProductRepository {
     edit,
   };
 }
-
-export const ProductMockRepository = ProductRepositoryMockFactory();
-export type ProductMockRepository = typeof ProductMockRepository;
