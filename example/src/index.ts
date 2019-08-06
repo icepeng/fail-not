@@ -6,9 +6,9 @@ import { TypeormServiceFactory } from './typeorm.service';
 
 async function bootstrap() {
   const TypeormService = await TypeormServiceFactory();
-  const ProductRepository = await ProductRepositoryFactory([TypeormService]);
-  const ProductService = await ProductServiceFactory([ProductRepository]);
-  const ProductController = await ProductControllerFactory([ProductService]);
+  const ProductRepository = ProductRepositoryFactory([TypeormService]);
+  const ProductService = ProductServiceFactory([ProductRepository]);
+  const ProductController = ProductControllerFactory([ProductService]);
   const app = expressAdapter(ProductController);
 
   // tslint:disable-next-line: no-console

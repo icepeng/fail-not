@@ -22,7 +22,7 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
-    "fail-not-core": "0.0.1-alpha.3",
+    "fail-not-core": "0.0.1",
     "pg": "^7.12.0",
     "typeorm": "^0.2.18"
   }
