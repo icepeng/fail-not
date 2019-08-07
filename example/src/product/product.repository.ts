@@ -10,6 +10,7 @@ import { Product } from './product.entity';
 
 export function ProductRepositoryFactory([{ connection }]: [TypeormService]) {
   const productRepo = connection.getRepository(Product);
+  const errorHandler = () => internalServerError('DB_ERROR' as const);
 
   const getAll = () =>
     AsyncResult.tryCatch(productRepo.find, () =>
@@ -17,25 +18,16 @@ export function ProductRepositoryFactory([{ connection }]: [TypeormService]) {
     );
 
   const getOne = (id: number) =>
-    AsyncResult.tryCatch(
-      () => productRepo.findOne(id),
-      () => internalServerError('DB_ERROR' as const),
-    );
+    AsyncResult.tryCatch(() => productRepo.findOne(id), errorHandler);
 
   const getOneByTitle = (title: string) =>
-    AsyncResult.tryCatch(
-      () => productRepo.findOne({ title }),
-      () => internalServerError('DB_ERROR' as const),
-    );
+    AsyncResult.tryCatch(() => productRepo.findOne({ title }), errorHandler);
 
   const add = pipe(
     (createProductDto: CreateProductDto) =>
       productRepo.create(createProductDto),
     product =>
-      AsyncResult.tryCatch(
-        () => productRepo.save(product),
-        () => internalServerError('DB_ERROR' as const),
-      ),
+      AsyncResult.tryCatch(() => productRepo.save(product), errorHandler),
     AsyncResult.map(res => res.id),
   );
 
@@ -44,10 +36,7 @@ export function ProductRepositoryFactory([{ connection }]: [TypeormService]) {
       (editProductDto: CreateProductDto) =>
         productRepo.create({ id, ...editProductDto }),
       product =>
-        AsyncResult.tryCatch(
-          () => productRepo.save(product),
-          () => internalServerError('DB_ERROR' as const),
-        ),
+        AsyncResult.tryCatch(() => productRepo.save(product), errorHandler),
       AsyncResult.map(res => res.id),
     );
 
