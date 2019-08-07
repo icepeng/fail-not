@@ -1,9 +1,8 @@
 import {
   AsyncResult,
   badRequest,
-  existing,
-  ifElse,
   Injected,
+  Maybe,
   notFound,
   pipe,
   Result,
@@ -19,11 +18,9 @@ export function ProductServiceFactory([productRepository]: [
   const getOne = pipe(
     productRepository.getOne,
     AsyncResult.bind(
-      ifElse({
-        if: existing,
-        then: Result.success,
-        else: () => Result.failure(notFound('Product not found' as const)),
-      }),
+      Maybe.fold(Result.success, () =>
+        Result.failure(notFound('Product not found' as const)),
+      ),
     ),
   );
 
@@ -31,11 +28,10 @@ export function ProductServiceFactory([productRepository]: [
     pipe(
       productRepository.getOneByTitle,
       AsyncResult.bind(
-        ifElse({
-          if: existing,
-          then: () => Result.failure(badRequest('Duplicate title' as const)),
-          else: () => Result.success(createProductDto),
-        }),
+        Maybe.fold(
+          () => Result.failure(badRequest('Duplicate title' as const)),
+          () => Result.success(createProductDto),
+        ),
       ),
     )(createProductDto.title);
 

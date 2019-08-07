@@ -4,6 +4,7 @@ export * from './async-result';
 export * from './existing';
 export * from './if-else';
 export * from './lazy';
+export * from './maybe';
 export * from './pipe';
 export * from './result';
 export * from './to-int';
