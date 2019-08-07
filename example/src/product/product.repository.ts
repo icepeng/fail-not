@@ -1,8 +1,8 @@
 import {
   AsyncResult,
-  internalServerError,
-  InternalServerError,
   Injected,
+  internalServerError,
+  pipe,
 } from 'fail-not-core';
 import { TypeormService } from '../typeorm.service';
 import { CreateProductDto } from './dtos/create-product.dto';
@@ -11,54 +11,45 @@ import { Product } from './product.entity';
 export function ProductRepositoryFactory([{ connection }]: [TypeormService]) {
   const productRepo = connection.getRepository(Product);
 
-  async function getAll(): AsyncResult<
-    Product[],
-    InternalServerError<'DB_ERROR'>
-  > {
-    return productRepo
-      .find()
-      .then(AsyncResult.success)
-      .catch(() => AsyncResult.failure(internalServerError('DB_ERROR')));
-  }
+  const getAll = () =>
+    AsyncResult.tryCatch(productRepo.find, () =>
+      internalServerError('DB_ERROR' as const),
+    );
 
-  async function getOne(
-    id: number,
-  ): AsyncResult<Product | undefined, InternalServerError<'DB_ERROR'>> {
-    return productRepo
-      .findOne(id)
-      .then(AsyncResult.success)
-      .catch(() => AsyncResult.failure(internalServerError('DB_ERROR')));
-  }
+  const getOne = (id: number) =>
+    AsyncResult.tryCatch(
+      () => productRepo.findOne(id),
+      () => internalServerError('DB_ERROR' as const),
+    );
 
-  async function getOneByTitle(
-    title: string,
-  ): AsyncResult<Product | undefined, InternalServerError<'DB_ERROR'>> {
-    return productRepo
-      .findOne({ title })
-      .then(AsyncResult.success)
-      .catch(() => AsyncResult.failure(internalServerError('DB_ERROR')));
-  }
+  const getOneByTitle = (title: string) =>
+    AsyncResult.tryCatch(
+      () => productRepo.findOne({ title }),
+      () => internalServerError('DB_ERROR' as const),
+    );
 
-  async function add(
-    createProductDto: CreateProductDto,
-  ): AsyncResult<number, InternalServerError<'DB_ERROR'>> {
-    const product = productRepo.create(createProductDto);
-    return productRepo
-      .save(product)
-      .then(res => AsyncResult.success(res.id))
-      .catch(() => AsyncResult.failure(internalServerError('DB_ERROR')));
-  }
+  const add = pipe(
+    (createProductDto: CreateProductDto) =>
+      productRepo.create(createProductDto),
+    product =>
+      AsyncResult.tryCatch(
+        () => productRepo.save(product),
+        () => internalServerError('DB_ERROR' as const),
+      ),
+    AsyncResult.map(res => res.id),
+  );
 
-  async function edit(
-    id: number,
-    editProductDto: CreateProductDto,
-  ): AsyncResult<number, InternalServerError<'DB_ERROR'>> {
-    const product = productRepo.create({ id, ...editProductDto });
-    return productRepo
-      .save(product)
-      .then(res => AsyncResult.success(res.id))
-      .catch(() => AsyncResult.failure(internalServerError('DB_ERROR')));
-  }
+  const edit = (id: number) =>
+    pipe(
+      (editProductDto: CreateProductDto) =>
+        productRepo.create({ id, ...editProductDto }),
+      product =>
+        AsyncResult.tryCatch(
+          () => productRepo.save(product),
+          () => internalServerError('DB_ERROR' as const),
+        ),
+      AsyncResult.map(res => res.id),
+    );
 
   return {
     getAll,

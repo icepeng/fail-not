@@ -41,10 +41,9 @@ export function ProductRepositoryMockFactory(): ProductRepository {
     return Result.success(id);
   }
 
-  async function edit(
-    id: number,
+  const edit = (id: number) => async (
     editProductDto: CreateProductDto,
-  ): AsyncResult<number, never> {
+  ): AsyncResult<number, never> => {
     const existing = DATA.find(x => x.id === id);
     if (!existing) {
       return Result.success(0);
@@ -54,7 +53,7 @@ export function ProductRepositoryMockFactory(): ProductRepository {
     existing.title = editProductDto.title;
 
     return Result.success(1);
-  }
+  };
 
   return {
     getAll,

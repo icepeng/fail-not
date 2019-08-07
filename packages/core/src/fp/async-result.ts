@@ -1,3 +1,4 @@
+import { Lazy } from './lazy';
 import { Failure, Result, Success } from './result';
 
 export type AsyncResult<T, R> = Promise<Result<T, R>>;
@@ -18,6 +19,17 @@ async function failure<T>(err: T): AsyncResult<never, T> {
 
 function fromResult<T, R>(x: Result<T, R>): AsyncResult<T, R> {
   return Promise.resolve(x);
+}
+
+async function tryCatch<T, R>(
+  fn: Lazy<Promise<T>>,
+  onError: (reason: unknown) => R,
+): AsyncResult<T, R> {
+  try {
+    return Result.success(await fn());
+  } catch (err) {
+    return Result.failure(onError(err));
+  }
 }
 
 function map<A, B>(fn: (x: A) => B) {
@@ -50,22 +62,22 @@ function liftA2<A, B, C>(fn: (x: A) => (y: B) => C) {
   return <E>(x: AsyncResult<A, E> | Result<A, E>) => apply(map(fn)(x));
 }
 
-function combine<I, A, B, E, E2>(
+function sequence<I, A, B, E, E2>(
   fnA: (i: I) => AsyncResult<A, E>,
   fnB: (i: I) => AsyncResult<B, E2>,
 ): (i: I) => AsyncResult<[A, B], E | E2>;
-function combine<I, A, B, C, E, E2, E3>(
+function sequence<I, A, B, C, E, E2, E3>(
   fnA: (i: I) => AsyncResult<A, E>,
   fnB: (i: I) => AsyncResult<B, E2>,
   fnC: (i: I) => AsyncResult<C, E3>,
 ): (i: I) => AsyncResult<[A, B, C], E | E2 | E3>;
-function combine<I, A, B, C, D, E, E2, E3, E4>(
+function sequence<I, A, B, C, D, E, E2, E3, E4>(
   fnA: (i: I) => AsyncResult<A, E>,
   fnB: (i: I) => AsyncResult<B, E2>,
   fnC: (i: I) => AsyncResult<C, E3>,
   fnD: (i: I) => AsyncResult<D, E4>,
 ): (i: I) => AsyncResult<[A, B, C, D], E | E2 | E3 | E4>;
-function combine(...fns: Array<(a: any) => AsyncResult<any, any>>) {
+function sequence(...fns: Array<(a: any) => AsyncResult<any, any>>) {
   return async (i: any) => {
     const results = await Promise.all(fns.map(fn => fn(i)));
     const failed = results.find(r => r.success === false) as Failure<any>;
@@ -103,14 +115,14 @@ function tap<A, E>(fn: (x: A) => void, errFn?: (x: E) => void) {
   };
 }
 
-function match<A, B>(
+function fold<A, B>(
   fn: (x: A) => B,
 ): <E>(x: AsyncResult<A, E>) => Promise<B | E>;
-function match<A, B, C, E>(
+function fold<A, B, C, E>(
   fn: (x: A) => B,
   errFn: (x: E) => C,
 ): (x: AsyncResult<A, E>) => Promise<B | C>;
-function match<A, B, C, E>(fn: (x: A) => B, errFn?: (x: E) => C) {
+function fold<A, B, C, E>(fn: (x: A) => B, errFn?: (x: E) => C) {
   return async (xPromise: AsyncResult<A, E>): Promise<B | C | E> => {
     const x = await xPromise;
     if (x.success === false) {
@@ -127,11 +139,12 @@ export const AsyncResult = {
   success,
   failure,
   fromResult,
+  tryCatch,
   map,
   apply,
   liftA2,
-  combine,
+  sequence,
   bind,
   tap,
-  match,
+  fold,
 };

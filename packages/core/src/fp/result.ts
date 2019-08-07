@@ -1,3 +1,5 @@
+import { Lazy } from './lazy';
+
 export interface Success<T> {
   success: true;
   value: T;
@@ -32,6 +34,17 @@ function isFailure(value: Result<any, any>) {
   return !value.success;
 }
 
+function tryCatch<T, R>(
+  fn: Lazy<T>,
+  onError: (reason: unknown) => R,
+): Result<T, R> {
+  try {
+    return Result.success(fn());
+  } catch (err) {
+    return Result.failure(onError(err));
+  }
+}
+
 function map<A, B>(fn: (x: A) => B) {
   return <E>(x: Result<A, E>): Result<B, E> => {
     if (x.success === false) {
@@ -54,22 +67,22 @@ function liftA2<A, B, C>(fn: (x: A) => (y: B) => C) {
   return <E>(x: Result<A, E>) => apply(map(fn)(x));
 }
 
-function combine<I, A, B, E, E2>(
+function sequence<I, A, B, E, E2>(
   fnA: (i: I) => Result<A, E>,
   fnB: (i: I) => Result<B, E2>,
 ): (i: I) => Result<[A, B], E | E2>;
-function combine<I, A, B, C, E, E2, E3>(
+function sequence<I, A, B, C, E, E2, E3>(
   fnA: (i: I) => Result<A, E>,
   fnB: (i: I) => Result<B, E2>,
   fnC: (i: I) => Result<C, E3>,
 ): (i: I) => Result<[A, B, C], E | E2 | E3>;
-function combine<I, A, B, C, D, E, E2, E3, E4>(
+function sequence<I, A, B, C, D, E, E2, E3, E4>(
   fnA: (i: I) => Result<A, E>,
   fnB: (i: I) => Result<B, E2>,
   fnC: (i: I) => Result<C, E3>,
   fnD: (i: I) => Result<D, E4>,
 ): (i: I) => Result<[A, B, C, D], E | E2 | E3 | E4>;
-function combine(...fns: Array<(a: any) => Result<any, any>>) {
+function sequence(...fns: Array<(a: any) => Result<any, any>>) {
   return (i: any) => {
     const results = fns.map(fn => fn(i));
     const failed = results.find(r => r.success === false) as Failure<any>;
@@ -103,12 +116,12 @@ function tap<A, E>(fn: (x: A) => void, errFn?: (x: E) => void) {
   };
 }
 
-function match<A, B>(fn: (x: A) => B): <E>(x: Result<A, E>) => B | E;
-function match<A, B, C, E>(
+function fold<A, B>(fn: (x: A) => B): <E>(x: Result<A, E>) => B | E;
+function fold<A, B, C, E>(
   fn: (x: A) => B,
   errFn: (x: E) => C,
 ): (x: Result<A, E>) => B | C;
-function match<A, B, C, E>(fn: (x: A) => B, errFn?: (x: E) => C) {
+function fold<A, B, C, E>(fn: (x: A) => B, errFn?: (x: E) => C) {
   return (x: Result<A, E>): B | C | E => {
     if (x.success === false) {
       if (!errFn) {
@@ -125,11 +138,12 @@ export const Result = {
   failure,
   isSuccess,
   isFailure,
+  tryCatch,
   map,
   apply,
-  combine,
+  sequence,
   liftA2,
   bind,
   tap,
-  match,
+  fold,
 };

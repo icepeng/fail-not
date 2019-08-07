@@ -2,7 +2,8 @@
   "compilerOptions": {
     "module": "commonjs",
     "declaration": true,
-    "noImplicitAny": false,
+    "strict": true,
+    "strictPropertyInitialization": false,
     "removeComments": true,
     "target": "es6",
     "sourceMap": true,

@@ -22,7 +22,7 @@ export function ProductControllerFactory([productService]: [
     '',
     pipe(
       productService.getAll,
-      AsyncResult.match(products => ok({ products })),
+      AsyncResult.fold(products => ok({ products })),
     ),
   );
 
@@ -32,7 +32,7 @@ export function ProductControllerFactory([productService]: [
       Param('id'),
       toInt,
       productService.getOne,
-      AsyncResult.match(products => ok({ products })),
+      AsyncResult.fold(products => ok({ products })),
     ),
   );
 
@@ -42,14 +42,14 @@ export function ProductControllerFactory([productService]: [
       Body(),
       createProductDtoValidator,
       AsyncResult.bind(productService.add),
-      AsyncResult.match(id => ok({ id })),
+      AsyncResult.fold(id => ok({ id })),
     ),
   );
 
   const edit = put(
     ':id',
     pipe(
-      Result.combine(
+      Result.sequence(
         pipe(
           Param('id'),
           toInt,
@@ -61,7 +61,7 @@ export function ProductControllerFactory([productService]: [
         ),
       ),
       AsyncResult.bind(productService.edit),
-      AsyncResult.match(() => ok({})),
+      AsyncResult.fold(() => ok({})),
     ),
   );
 

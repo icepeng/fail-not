@@ -47,7 +47,7 @@ export function ProductServiceFactory([productRepository]: [
   const edit = ([id, editProductDto]: [number, CreateProductDto]) =>
     pipe(
       getOne,
-      AsyncResult.bind(() => productRepository.edit(id, editProductDto)),
+      AsyncResult.bind(() => productRepository.edit(id)(editProductDto)),
     )(id);
 
   return {
