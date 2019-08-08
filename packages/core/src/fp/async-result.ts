@@ -44,6 +44,18 @@ function map<A, B>(fn: (x: A) => B) {
   };
 }
 
+function bimap<A, B, E, E2>(fn: (x: A) => B, errFn: (x: E) => E2) {
+  return async (
+    xPromise: AsyncResult<A, E> | Result<A, E>,
+  ): AsyncResult<B, E2> => {
+    const x = await xPromise;
+    if (x.success === false) {
+      return Result.failure(errFn(x.err));
+    }
+    return Result.success(fn(x.value));
+  };
+}
+
 function apply<A, B, E>(
   fnPromise: AsyncResult<(x: A) => B, E> | Result<(x: A) => B, E>,
 ) {
@@ -141,6 +153,7 @@ export const AsyncResult = {
   fromResult,
   tryCatch,
   map,
+  bimap,
   apply,
   liftA2,
   sequence,

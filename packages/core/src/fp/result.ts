@@ -54,6 +54,15 @@ function map<A, B>(fn: (x: A) => B) {
   };
 }
 
+function bimap<A, B, E, E2>(fn: (x: A) => B, errFn: (x: E) => E2) {
+    return (x: Result<A, E>): Result<B, E2> => {
+        if (x.success === false) {
+            return Result.failure(errFn(x.err));
+        }
+        return Result.success(fn(x.value));
+    };
+}
+
 function apply<A, B, E>(fn: Result<(x: A) => B, E>) {
   return <E2>(x: Result<A, E2>): Result<B, E | E2> => {
     if (fn.success === false) {
@@ -140,6 +149,7 @@ export const Result = {
   isFailure,
   tryCatch,
   map,
+  bimap,
   apply,
   sequence,
   liftA2,
