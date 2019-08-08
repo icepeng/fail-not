@@ -45,6 +45,10 @@ function tryCatch<T, R>(
   }
 }
 
+function fromPredicate<T, R>(fn: (x: T) => boolean, onFalse: (x: T) => R): (x: T) => Result<T, R> {
+    return (x: T) => (fn(x) ? success(x) : failure(onFalse(x)));
+}
+
 function map<A, B>(fn: (x: A) => B) {
   return <E>(x: Result<A, E>): Result<B, E> => {
     if (x.success === false) {
@@ -148,6 +152,7 @@ export const Result = {
   isSuccess,
   isFailure,
   tryCatch,
+  fromPredicate,
   map,
   bimap,
   apply,
