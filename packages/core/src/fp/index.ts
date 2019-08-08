@@ -1,7 +1,6 @@
 export * from './array';
 export * from './async';
 export * from './async-result';
-export * from './existing';
 export * from './if-else';
 export * from './lazy';
 export * from './maybe';
