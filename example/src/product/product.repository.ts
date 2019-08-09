@@ -13,9 +13,7 @@ export function ProductRepositoryFactory([{ connection }]: [TypeormService]) {
   const errorHandler = () => internalServerError('DB_ERROR' as const);
 
   const getAll = () =>
-    AsyncResult.tryCatch(productRepo.find, () =>
-      internalServerError('DB_ERROR' as const),
-    );
+    AsyncResult.tryCatch(() => productRepo.find(), errorHandler);
 
   const getOne = (id: number) =>
     AsyncResult.tryCatch(() => productRepo.findOne(id), errorHandler);

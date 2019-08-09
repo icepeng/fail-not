@@ -1,4 +1,4 @@
-import { Lazy } from './lazy';
+import { Lazy } from './types';
 import { Failure, Result, Success } from './result';
 
 export type AsyncResult<T, R> = Promise<Result<T, R>>;

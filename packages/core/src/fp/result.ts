@@ -1,4 +1,4 @@
-import { Lazy } from './lazy';
+import { Lazy, Refinement, Predicate } from './types';
 
 export interface Success<T> {
   success: true;
@@ -45,8 +45,15 @@ function tryCatch<T, R>(
   }
 }
 
-function fromPredicate<T, R>(fn: (x: T) => boolean, onFalse: (x: T) => R): (x: T) => Result<T, R> {
-    return (x: T) => (fn(x) ? success(x) : failure(onFalse(x)));
+function fromPredicate<E, A, B extends A>(
+  fn: Refinement<A, B>,
+  onFalse: (x: A) => E,
+): (x: A) => Result<B, E>;
+function fromPredicate<E, A>(
+  fn: Predicate<A>,
+  onFalse: (x: A) => E,
+): (x: A) => Result<A, E> {
+  return (x: A) => (fn(x) ? success(x) : failure(onFalse(x)));
 }
 
 function map<A, B>(fn: (x: A) => B) {
@@ -59,12 +66,12 @@ function map<A, B>(fn: (x: A) => B) {
 }
 
 function bimap<A, B, E, E2>(fn: (x: A) => B, errFn: (x: E) => E2) {
-    return (x: Result<A, E>): Result<B, E2> => {
-        if (x.success === false) {
-            return Result.failure(errFn(x.err));
-        }
-        return Result.success(fn(x.value));
-    };
+  return (x: Result<A, E>): Result<B, E2> => {
+    if (x.success === false) {
+      return Result.failure(errFn(x.err));
+    }
+    return Result.success(fn(x.value));
+  };
 }
 
 function apply<A, B, E>(fn: Result<(x: A) => B, E>) {

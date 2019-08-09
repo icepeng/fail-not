@@ -60,6 +60,10 @@ export function patch<T extends ResponseModel>(
   return route('patch', path, handler);
 }
 
+function validatePath(path?: string): string {
+  return path ? (path.charAt(0) !== '/' ? '/' + path : path) : '';
+}
+
 export function prefixRoutes(path: string, routes: Routes): Routes {
-  return routes.map(x => ({ ...x, path: '/' + path + '/' + x.path }));
+  return routes.map(x => ({ ...x, path: '/' + path + validatePath(x.path) }));
 }
