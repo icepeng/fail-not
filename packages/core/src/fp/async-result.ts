@@ -1,30 +1,30 @@
-import { Lazy } from './types';
 import { Failure, Result, Success } from './result';
+import { Lazy } from './types';
 
-export type AsyncResult<T, R> = Promise<Result<T, R>>;
+export type AsyncResult<A, E> = Promise<Result<A, E>>;
 
-async function success<T>(value: T): AsyncResult<T, never> {
+async function success<A>(value: A): AsyncResult<A, never> {
   return {
     success: true,
     value,
   };
 }
 
-async function failure<T>(err: T): AsyncResult<never, T> {
+async function failure<E>(err: E): AsyncResult<never, E> {
   return {
     success: false,
     err,
   };
 }
 
-function fromResult<T, R>(x: Result<T, R>): AsyncResult<T, R> {
+function fromResult<A, E>(x: Result<A, E>): AsyncResult<A, E> {
   return Promise.resolve(x);
 }
 
-async function tryCatch<T, R>(
-  fn: Lazy<Promise<T>>,
-  onError: (reason: unknown) => R,
-): AsyncResult<T, R> {
+async function tryCatch<A, E>(
+  fn: Lazy<Promise<A>>,
+  onError: (reason: unknown) => E,
+): AsyncResult<A, E> {
   try {
     return Result.success(await fn());
   } catch (err) {
@@ -74,33 +74,6 @@ function liftA2<A, B, C>(fn: (x: A) => (y: B) => C) {
   return <E>(x: AsyncResult<A, E> | Result<A, E>) => apply(map(fn)(x));
 }
 
-function sequence<I, A, B, E, E2>(
-  fnA: (i: I) => AsyncResult<A, E>,
-  fnB: (i: I) => AsyncResult<B, E2>,
-): (i: I) => AsyncResult<[A, B], E | E2>;
-function sequence<I, A, B, C, E, E2, E3>(
-  fnA: (i: I) => AsyncResult<A, E>,
-  fnB: (i: I) => AsyncResult<B, E2>,
-  fnC: (i: I) => AsyncResult<C, E3>,
-): (i: I) => AsyncResult<[A, B, C], E | E2 | E3>;
-function sequence<I, A, B, C, D, E, E2, E3, E4>(
-  fnA: (i: I) => AsyncResult<A, E>,
-  fnB: (i: I) => AsyncResult<B, E2>,
-  fnC: (i: I) => AsyncResult<C, E3>,
-  fnD: (i: I) => AsyncResult<D, E4>,
-): (i: I) => AsyncResult<[A, B, C, D], E | E2 | E3 | E4>;
-function sequence(...fns: Array<(a: any) => AsyncResult<any, any>>) {
-  return async (i: any) => {
-    const results = await Promise.all(fns.map(fn => fn(i)));
-    const failed = results.find(r => r.success === false) as Failure<any>;
-    if (failed) {
-      return failed;
-    }
-
-    return success(results.map(r => (r as Success<any>).value));
-  };
-}
-
 function bind<A, B, E>(fn: (x: A) => AsyncResult<B, E> | Result<B, E>) {
   return async <E2>(
     xPromise: AsyncResult<A, E2> | Result<A, E2>,
@@ -111,6 +84,38 @@ function bind<A, B, E>(fn: (x: A) => AsyncResult<B, E> | Result<B, E>) {
     }
     return fn(x.value);
   };
+}
+
+async function sequence<A, B, E, E2>([ma, mb]: [
+  AsyncResult<A, E>,
+  AsyncResult<B, E2>,
+]): AsyncResult<[A, B], E | E2>;
+async function sequence<A, B, C, E, E2, E3>([ma, mb, mc]: [
+  AsyncResult<A, E>,
+  AsyncResult<B, E2>,
+  AsyncResult<C, E3>,
+]): AsyncResult<[A, B, C], E | E2 | E3>;
+async function sequence<A, B, C, D, E, E2, E3, E4>([ma, mb, mc, md]: [
+  AsyncResult<A, E>,
+  AsyncResult<B, E2>,
+  AsyncResult<C, E3>,
+  AsyncResult<D, E4>,
+]): AsyncResult<[A, B, C, D], E | E2 | E3 | E4>;
+async function sequence<A, E>(
+  mList: Array<AsyncResult<A, E>>,
+): AsyncResult<A[], E>;
+async function sequence(mmaList: Array<AsyncResult<any, any>>) {
+  const maList = await Promise.all(mmaList);
+  const failed = maList.find(r => r.success === false) as Failure<any>;
+  if (failed) {
+    return failed;
+  }
+
+  return success(maList.map(r => (r as Success<any>).value));
+}
+
+function traverse<A, B, E>(fn: (a: A) => AsyncResult<B, E>) {
+  return (arr: A[]) => sequence(arr.map(fn));
 }
 
 function tap<A, E>(fn: (x: A) => void, errFn?: (x: E) => void) {
@@ -156,8 +161,9 @@ export const AsyncResult = {
   bimap,
   apply,
   liftA2,
-  sequence,
   bind,
+  sequence,
+  traverse,
   tap,
   fold,
 };

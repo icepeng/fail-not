@@ -1,25 +1,25 @@
-import { Lazy, Refinement, Predicate } from './types';
+import { Lazy, Predicate, Refinement } from './types';
 
-export interface Success<T> {
+export interface Success<A> {
   success: true;
-  value: T;
+  value: A;
 }
 
-export interface Failure<T> {
+export interface Failure<E> {
   success: false;
-  err: T;
+  err: E;
 }
 
-export type Result<T, R> = Success<T> | Failure<R>;
+export type Result<A, E> = Success<A> | Failure<E>;
 
-function success<T>(value: T): Result<T, never> {
+function success<A>(value: A): Result<A, never> {
   return {
     success: true,
     value,
   };
 }
 
-function failure<T>(err: T): Result<never, T> {
+function failure<E>(err: E): Result<never, E> {
   return {
     success: false,
     err,
@@ -34,10 +34,10 @@ function isFailure(value: Result<any, any>) {
   return !value.success;
 }
 
-function tryCatch<T, R>(
-  fn: Lazy<T>,
-  onError: (reason: unknown) => R,
-): Result<T, R> {
+function tryCatch<A, E>(
+  fn: Lazy<A>,
+  onError: (reason: unknown) => E,
+): Result<A, E> {
   try {
     return Result.success(fn());
   } catch (err) {
@@ -87,40 +87,42 @@ function liftA2<A, B, C>(fn: (x: A) => (y: B) => C) {
   return <E>(x: Result<A, E>) => apply(map(fn)(x));
 }
 
-function sequence<I, A, B, E, E2>(
-  fnA: (i: I) => Result<A, E>,
-  fnB: (i: I) => Result<B, E2>,
-): (i: I) => Result<[A, B], E | E2>;
-function sequence<I, A, B, C, E, E2, E3>(
-  fnA: (i: I) => Result<A, E>,
-  fnB: (i: I) => Result<B, E2>,
-  fnC: (i: I) => Result<C, E3>,
-): (i: I) => Result<[A, B, C], E | E2 | E3>;
-function sequence<I, A, B, C, D, E, E2, E3, E4>(
-  fnA: (i: I) => Result<A, E>,
-  fnB: (i: I) => Result<B, E2>,
-  fnC: (i: I) => Result<C, E3>,
-  fnD: (i: I) => Result<D, E4>,
-): (i: I) => Result<[A, B, C, D], E | E2 | E3 | E4>;
-function sequence(...fns: Array<(a: any) => Result<any, any>>) {
-  return (i: any) => {
-    const results = fns.map(fn => fn(i));
-    const failed = results.find(r => r.success === false) as Failure<any>;
-    if (failed) {
-      return failed;
-    }
-
-    return success(results.map(r => (r as Success<any>).value));
-  };
-}
-
-function bind<T, R, E>(fn: (x: T) => Result<R, E>) {
-  return <E2>(x: Result<T, E2>): Result<R, E | E2> => {
+function bind<A, B, E>(fn: (x: A) => Result<B, E>) {
+  return <E2>(x: Result<A, E2>): Result<B, E | E2> => {
     if (x.success === false) {
       return x;
     }
     return fn(x.value);
   };
+}
+
+function sequence<A, B, E, E2>([ma, mb]: [Result<A, E>, Result<B, E2>]): Result<
+  [A, B],
+  E | E2
+>;
+function sequence<A, B, C, E, E2, E3>([ma, mb, mc]: [
+  Result<A, E>,
+  Result<B, E2>,
+  Result<C, E3>,
+]): Result<[A, B, C], E | E2 | E3>;
+function sequence<A, B, C, D, E, E2, E3, E4>([ma, mb, mc, md]: [
+  Result<A, E>,
+  Result<B, E2>,
+  Result<C, E3>,
+  Result<D, E4>,
+]): Result<[A, B, C, D], E | E2 | E3 | E4>;
+function sequence<A, E>(mList: Array<Result<A, E>>): Result<A[], E>;
+function sequence(mList: Array<Result<any, any>>) {
+  const failed = mList.find(r => r.success === false) as Failure<any>;
+  if (failed) {
+    return failed;
+  }
+
+  return success(mList.map(r => (r as Success<any>).value));
+}
+
+function traverse<A, B, E>(fn: (a: A) => Result<B, E>) {
+  return (arr: A[]) => sequence(arr.map(fn));
 }
 
 function tap<A, E>(fn: (x: A) => void, errFn?: (x: E) => void) {
@@ -163,9 +165,10 @@ export const Result = {
   map,
   bimap,
   apply,
-  sequence,
   liftA2,
   bind,
+  sequence,
+  traverse,
   tap,
   fold,
 };

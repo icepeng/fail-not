@@ -8,10 +8,10 @@ import {
   post,
   prefixRoutes,
   put,
-  Result,
+  ReaderResult,
   Routes,
-  toInt,
 } from 'fail-not-core';
+import { toInt } from '../common/to-int';
 import { createProductDtoValidator } from './dtos/create-product.dto';
 import { ProductService } from './product.service';
 
@@ -29,9 +29,8 @@ export function ProductControllerFactory([productService]: [
   const getOne = get(
     ':id',
     pipe(
-      Param('id'),
-      toInt,
-      productService.getOne,
+      Param('id', toInt),
+      AsyncResult.bind(productService.getOne),
       AsyncResult.fold(products => ok({ products })),
     ),
   );
@@ -49,17 +48,10 @@ export function ProductControllerFactory([productService]: [
   const edit = put(
     ':id',
     pipe(
-      Result.sequence(
-        pipe(
-          Param('id'),
-          toInt,
-          Result.success,
-        ),
-        pipe(
-          Body(),
-          createProductDtoValidator,
-        ),
-      ),
+      ReaderResult.sequence([
+        Param('id', toInt),
+        Body(createProductDtoValidator),
+      ]),
       AsyncResult.bind(productService.edit),
       AsyncResult.fold(() => ok({})),
     ),
