@@ -38,8 +38,7 @@ export function ProductControllerFactory([productService]: [
   const add = post(
     '',
     pipe(
-      Body(),
-      createProductDtoValidator,
+      Body(createProductDtoValidator),
       AsyncResult.bind(productService.add),
       AsyncResult.fold(id => ok({ id })),
     ),
