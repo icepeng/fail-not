@@ -1,4 +1,4 @@
-export type Maybe<T> = T | undefined | null;
+export type Maybe<T> = T | None;
 export type None = undefined | null;
 
 function map<A, B>(fn: (x: A) => B) {
