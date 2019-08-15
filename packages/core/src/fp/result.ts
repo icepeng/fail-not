@@ -39,9 +39,9 @@ function tryCatch<A, E>(
   onError: (reason: unknown) => E,
 ): Result<A, E> {
   try {
-    return Result.success(fn());
+    return success(fn());
   } catch (err) {
-    return Result.failure(onError(err));
+    return failure(onError(err));
   }
 }
 
@@ -68,9 +68,9 @@ function map<A, B>(fn: (x: A) => B) {
 function bimap<A, B, E, E2>(fn: (x: A) => B, errFn: (x: E) => E2) {
   return (x: Result<A, E>): Result<B, E2> => {
     if (x.success === false) {
-      return Result.failure(errFn(x.err));
+      return failure(errFn(x.err));
     }
-    return Result.success(fn(x.value));
+    return success(fn(x.value));
   };
 }
 
