@@ -16,7 +16,7 @@ import { createProductDtoValidator } from './dtos/create-product.dto';
 import { ProductService } from './product.service';
 
 export function ProductControllerFactory([productService]: [
-  ProductService,
+  ProductService
 ]): Routes {
   const getAll = get(
     '',

@@ -44,7 +44,7 @@ export function ProductRepositoryFactory([{ connection }]: [TypeormService]) {
     getOneByTitle,
     add,
     edit,
-  };
+  } as const;
 }
 
 export type ProductRepository = Injected<typeof ProductRepositoryFactory>;

@@ -51,7 +51,7 @@ export function ProductServiceFactory([productRepository]: [
     getOne,
     add,
     edit,
-  };
+  } as const;
 }
 
 export type ProductService = Injected<typeof ProductServiceFactory>;
